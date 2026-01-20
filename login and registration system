@@ -1,0 +1,66 @@
+import json
+import os
+import hashlib
+
+USER_DB = "users.json"
+
+
+def load_users():
+    if not os.path.exists(USER_DB):
+        return {}
+
+    try:
+        with open(USER_DB, "r", encoding="utf-8") as file:
+            return json.load(file)
+    except json.JSONDecodeError:
+        # If file is empty or corrupted, reset it
+        return {}
+
+
+def save_users(users):
+    with open(USER_DB, "w", encoding="utf-8") as file:
+        json.dump(users, file, indent=4)
+
+
+def hash_password(password):
+    return hashlib.sha256(password.encode("utf-8")).hexdigest()
+
+
+def register_user(username, password):
+    if not username or not password:
+        return "Error: Username and password cannot be empty."
+
+    if len(password) < 6:
+        return "Error: Password must be at least 6 characters long."
+
+    users = load_users()
+
+    if username in users:
+        return "Error: Username already exists."
+
+    users[username] = hash_password(password)
+    save_users(users)
+
+    return "Registration successful."
+
+
+def login_user(username, password):
+    if not username or not password:
+        return "Error: Username and password cannot be empty."
+
+    users = load_users()
+
+    if username not in users:
+        return "Error: User not found."
+
+    if users[username] != hash_password(password):
+        return "Error: Incorrect password."
+
+    return "Login successful."
+
+
+# Example usage
+if __name__ == "__main__":
+    print(register_user("alice", "secure123"))
+    print(login_user("alice", "secure123"))
+    print(login_user("alice", "wrongpass"))

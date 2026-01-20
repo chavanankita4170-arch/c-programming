@@ -1,0 +1,121 @@
+from datetime import datetime
+import uuid
+
+
+class Transaction:
+    def __init__(self, transaction_type, amount, description=""):
+        self.transaction_id = str(uuid.uuid4())
+        self.transaction_type = transaction_type
+        self.amount = amount
+        self.date = datetime.now()
+        self.description = description
+
+    def __str__(self):
+        return f"{self.date.strftime('%Y-%m-%d %H:%M:%S')} | {self.transaction_type} | Amount: {self.amount:.2f} | {self.description}"
+
+
+class Account:
+    def __init__(self, account_number):
+        self.account_number = account_number
+        self.balance = 0.0
+        self.transactions = []
+
+    def deposit(self, amount):
+        if amount <= 0:
+            return "Deposit amount must be positive."
+
+        self.balance += amount
+        self.transactions.append(Transaction("Deposit", amount))
+        return f"Deposit successful. New balance: {self.balance:.2f}"
+
+    def withdraw(self, amount):
+        if amount <= 0:
+            return "Withdrawal amount must be positive."
+
+        if amount > self.balance:
+            return "Insufficient balance."
+
+        self.balance -= amount
+        self.transactions.append(Transaction("Withdrawal", amount))
+        return f"Withdrawal successful. New balance: {self.balance:.2f}"
+
+    def transfer(self, target_account, amount):
+        if amount <= 0:
+            return "Transfer amount must be positive."
+
+        if amount > self.balance:
+            return "Insufficient balance."
+
+        self.balance -= amount
+        target_account.balance += amount
+
+        self.transactions.append(
+            Transaction("Transfer Out", amount, f"To Account {target_account.account_number}")
+        )
+        target_account.transactions.append(
+            Transaction("Transfer In", amount, f"From Account {self.account_number}")
+        )
+
+        return "Transfer successful."
+
+    def get_recent_transactions(self, limit=5):
+        return self.transactions[-limit:]
+
+    def display_account_info(self):
+        print(f"\nAccount Number: {self.account_number}")
+        print(f"Balance: {self.balance:.2f}")
+        print("Recent Transactions:")
+        if not self.transactions:
+            print("No transactions yet.")
+        else:
+            for txn in self.get_recent_transactions():
+                print(txn)
+
+
+class Customer:
+    def __init__(self, customer_id, name):
+        self.customer_id = customer_id
+        self.name = name
+        self.accounts = []
+
+    def create_account(self):
+        account_number = str(uuid.uuid4())[:8]  # Generate a short unique account number
+        account = Account(account_number)
+        self.accounts.append(account)
+        return account
+
+    def get_account(self, account_number):
+        for account in self.accounts:
+            if account.account_number == account_number:
+                return account
+        return None
+
+    def display_customer_info(self):
+        print(f"\nCustomer ID: {self.customer_id}")
+        print(f"Name: {self.name}")
+        print("Accounts:")
+        if not self.accounts:
+            print("No accounts yet.")
+        else:
+            for account in self.accounts:
+                print(f"- Account {account.account_number} | Balance: {account.balance:.2f}")
+
+
+# Example usage
+if __name__ == "__main__":
+    # Create a customer
+    customer = Customer("C001", "Alice")
+
+    # Create two accounts
+    acc1 = customer.create_account()
+    acc2 = customer.create_account()
+
+    # Perform transactions
+    print(acc1.deposit(1000))
+    print(acc1.withdraw(250))
+    print(acc1.transfer(acc2, 300))
+
+    # Display customer and account info
+    customer.display_customer_info()
+    acc1.display_account_info()
+    acc2.display_account_info()

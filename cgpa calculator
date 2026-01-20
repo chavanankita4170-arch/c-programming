@@ -1,0 +1,59 @@
+# GPA and CGPA Calculator
+
+try:
+    num_courses = int(input("Enter the number of courses taken: "))
+    if num_courses <= 0:
+        raise ValueError
+except ValueError:
+    print("Please enter a valid positive number of courses.")
+    exit()
+
+courses = []
+total_credits = 0
+total_grade_points = 0.0
+
+for i in range(1, num_courses + 1):
+    print(f"\nCourse {i}")
+
+    while True:
+        try:
+            grade = float(input("Enter grade (e.g., 4.0 scale): "))
+            if grade < 0 or grade > 4.0:
+                raise ValueError
+            break
+        except ValueError:
+            print("Invalid grade. Enter a value between 0.0 and 4.0.")
+
+    while True:
+        try:
+            credit_hours = int(input("Enter credit hours: "))
+            if credit_hours <= 0:
+                raise ValueError
+            break
+        except ValueError:
+            print("Invalid credit hours. Enter a positive integer.")
+
+    grade_points = grade * credit_hours
+
+    courses.append({
+        "course": i,
+        "grade": grade,
+        "credits": credit_hours,
+        "grade_points": grade_points
+    })
+
+    total_credits += credit_hours
+    total_grade_points += grade_points
+
+# Calculate GPA / CGPA
+gpa = total_grade_points / total_credits
+
+# Display results
+print("\n----- Course Details -----")
+for c in courses:
+    print(f"Course {c['course']}: Grade = {c['grade']}, Credits = {c['credits']}")
+
+print("\n----- Summary -----")
+print(f"Total Credits: {total_credits}")
+print(f"Semester GPA: {gpa:.2f}")
+print(f"Overall CGPA: {gpa:.2f}")
